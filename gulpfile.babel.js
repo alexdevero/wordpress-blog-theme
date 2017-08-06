@@ -1,3 +1,5 @@
+'use strict';
+
 // ## Globals
 var argv         = require('minimist')(process.argv.slice(2));
 var autoprefixer = require('gulp-autoprefixer');
@@ -68,7 +70,7 @@ var enabled = {
 var revManifest = path.dist + 'assets.json';
 
 // Error checking; produce an error rather than crashing.
-var onError = function(err) {
+var onError = (err) => {
   console.log(err.toString());
   this.emit('end');
 };
@@ -83,18 +85,18 @@ var onError = function(err) {
 //   .pipe(cssTasks('main.css')
 //   .pipe(gulp.dest(path.dist + 'styles'))
 // ```
-var cssTasks = function(filename) {
+var cssTasks = (filename) => {
   return lazypipe()
-    .pipe(function() {
+    .pipe(() => {
       return gulpif(!enabled.failStyleTask, plumber());
     })
-    .pipe(function() {
+    .pipe(() => {
       return gulpif(enabled.maps, sourcemaps.init());
     })
-    .pipe(function() {
+    .pipe(() => {
       return gulpif('*.less', less());
     })
-    .pipe(function() {
+    .pipe(() => {
       return gulpif('*.scss', sass({
         outputStyle: 'nested', // libsass doesn't support expanded yet
         precision: 10,
@@ -113,10 +115,10 @@ var cssTasks = function(filename) {
     .pipe(cssNano, {
       safe: true
     })
-    .pipe(function() {
+    .pipe(() => {
       return gulpif(enabled.rev, rev());
     })
-    .pipe(function() {
+    .pipe(() => {
       return gulpif(enabled.maps, sourcemaps.write('.', {
         sourceRoot: 'assets/styles/'
       }));
@@ -130,9 +132,9 @@ var cssTasks = function(filename) {
 //   .pipe(jsTasks('main.js')
 //   .pipe(gulp.dest(path.dist + 'scripts'))
 // ```
-var jsTasks = function(filename) {
+var jsTasks = (filename) => {
   return lazypipe()
-    .pipe(function() {
+    .pipe(() => {
       return gulpif(enabled.maps, sourcemaps.init());
     })
     .pipe(concat, filename)
@@ -141,10 +143,10 @@ var jsTasks = function(filename) {
         'drop_debugger': enabled.stripJSDebug
       }
     })
-    .pipe(function() {
+    .pipe(() => {
       return gulpif(enabled.rev, rev());
     })
-    .pipe(function() {
+    .pipe(() => {
       return gulpif(enabled.maps, sourcemaps.write('.', {
         sourceRoot: 'assets/scripts/'
       }));
@@ -154,7 +156,7 @@ var jsTasks = function(filename) {
 // ### Write to rev manifest
 // If there are any revved files then write them to the rev manifest.
 // See https://github.com/sindresorhus/gulp-rev
-var writeToManifest = function(directory) {
+var writeToManifest = (directory) => {
   return lazypipe()
     .pipe(gulp.dest, path.dist + directory)
     .pipe(browserSync.stream, {match: '**/*.{js,css}'})
@@ -172,12 +174,12 @@ var writeToManifest = function(directory) {
 // `gulp styles` - Compiles, combines, and optimizes Bower CSS and project CSS.
 // By default this task will only log a warning if a precompiler error is
 // raised. If the `--production` flag is set: this task will fail outright.
-gulp.task('styles', ['wiredep'], function() {
+gulp.task('styles', ['wiredep'], () => {
   var merged = merge();
-  manifest.forEachDependency('css', function(dep) {
+  manifest.forEachDependency('css', (dep) => {
     var cssTasksInstance = cssTasks(dep.name);
     if (!enabled.failStyleTask) {
-      cssTasksInstance.on('error', function(err) {
+      cssTasksInstance.on('error', (err) => {
         console.error(err.message);
         this.emit('end');
       });
@@ -193,9 +195,9 @@ gulp.task('styles', ['wiredep'], function() {
 // ### Scripts
 // `gulp scripts` - Runs JSHint then compiles, combines, and optimizes Bower JS
 // and project JS.
-gulp.task('scripts', ['jshint'], function() {
+gulp.task('scripts', ['jshint'], () => {
   var merged = merge();
-  manifest.forEachDependency('js', function(dep) {
+  manifest.forEachDependency('js', (dep) => {
     merged.add(
       gulp.src(dep.globs, {base: 'scripts'})
         .pipe(plumber({errorHandler: onError}))
@@ -209,7 +211,7 @@ gulp.task('scripts', ['jshint'], function() {
 // ### Fonts
 // `gulp fonts` - Grabs all the fonts and outputs them in a flattened directory
 // structure. See: https://github.com/armed/gulp-flatten
-gulp.task('fonts', function() {
+gulp.task('fonts', () => {
   return gulp.src(globs.fonts)
     .pipe(flatten())
     .pipe(gulp.dest(path.dist + 'fonts'))
@@ -218,12 +220,22 @@ gulp.task('fonts', function() {
 
 // ### Images
 // `gulp images` - Run lossless compression on all the images.
-gulp.task('images', function() {
+gulp.task('images', () => {
   return gulp.src(globs.images)
     .pipe(imagemin([
-      imagemin.jpegtran({progressive: true}),
-      imagemin.gifsicle({interlaced: true}),
-      imagemin.svgo({plugins: [{removeUnknownsAndDefaults: false}, {cleanupIDs: false}]})
+      imagemin.jpegtran({
+        progressive: true
+      }),
+      imagemin.gifsicle({
+        interlaced: true
+      }),
+      imagemin.svgo({
+        plugins: [{
+          removeUnknownsAndDefaults: false
+        }, {
+          cleanupIDs: false
+        }]
+      })
     ]))
     .pipe(gulp.dest(path.dist + 'images'))
     .pipe(browserSync.stream());
@@ -270,10 +282,7 @@ gulp.task('watch', function() {
 // `gulp build` - Run all the build tasks but don't clean up beforehand.
 // Generally you should be running `gulp` instead of `gulp build`.
 gulp.task('build', function(callback) {
-  runSequence('styles',
-              'scripts',
-              ['fonts', 'images'],
-              callback);
+  runSequence('styles', 'scripts', ['fonts', 'images'], callback);
 });
 
 // ### Wiredep
