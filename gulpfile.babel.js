@@ -1,37 +1,37 @@
 'use strict';
 
 // ## Globals
-var argv         = require('minimist')(process.argv.slice(2));
-var autoprefixer = require('gulp-autoprefixer');
-var browserSync  = require('browser-sync').create();
-var changed      = require('gulp-changed');
-var concat       = require('gulp-concat');
-var flatten      = require('gulp-flatten');
-var gulp         = require('gulp');
-var gulpif       = require('gulp-if');
-var imagemin     = require('gulp-imagemin');
-var jshint       = require('gulp-jshint');
-var lazypipe     = require('lazypipe');
-var less         = require('gulp-less');
-var merge        = require('merge-stream');
-var cssNano      = require('gulp-cssnano');
-var plumber      = require('gulp-plumber');
-var rev          = require('gulp-rev');
-var runSequence  = require('run-sequence');
-var sass         = require('gulp-sass');
-var sourcemaps   = require('gulp-sourcemaps');
-var uglify       = require('gulp-uglify');
+const argv = require('minimist')(process.argv.slice(2));
+const autoprefixer = require('gulp-autoprefixer');
+const browserSync = require('browser-sync').create();
+const changed = require('gulp-changed');
+const concat = require('gulp-concat');
+const flatten = require('gulp-flatten');
+const gulp = require('gulp');
+const gulpif = require('gulp-if');
+const imagemin = require('gulp-imagemin');
+const jshint = require('gulp-jshint');
+const lazypipe = require('lazypipe');
+const less = require('gulp-less');
+const merge = require('merge-stream');
+const cssNano = require('gulp-cssnano');
+const plumber = require('gulp-plumber');
+const rev = require('gulp-rev');
+const runSequence = require('run-sequence');
+const sass = require('gulp-sass');
+const sourcemaps = require('gulp-sourcemaps');
+const uglify = require('gulp-uglify');
 
 // See https://github.com/austinpray/asset-builder
-var manifest = require('asset-builder')('./assets/manifest.json');
+const manifest = require('asset-builder')('./assets/manifest.json');
 
 // `path` - Paths to base asset directories. With trailing slashes.
 // - `path.source` - Path to the source files. Default: `assets/`
 // - `path.dist` - Path to the build directory. Default: `dist/`
-var path = manifest.paths;
+const path = manifest.paths;
 
 // `config` - Store arbitrary configuration values here.
-var config = manifest.config || {};
+const config = manifest.config || {};
 
 // `globs` - These ultimately end up in their respective `gulp.src`.
 // - `globs.js` - Array of asset-builder JS dependency objects. Example:
@@ -45,15 +45,15 @@ var config = manifest.config || {};
 // - `globs.fonts` - Array of font path globs.
 // - `globs.images` - Array of image path globs.
 // - `globs.bower` - Array of all the main Bower files.
-var globs = manifest.globs;
+const globs = manifest.globs;
 
 // `project` - paths to first-party assets.
 // - `project.js` - Array of first-party JS assets.
 // - `project.css` - Array of first-party CSS assets.
-var project = manifest.getProjectGlobs();
+const project = manifest.getProjectGlobs();
 
 // CLI options
-var enabled = {
+const enabled = {
   // Enable static asset revisioning when `--production`
   rev: argv.production,
   // Disable source maps when `--production`
@@ -67,10 +67,10 @@ var enabled = {
 };
 
 // Path to the compiled assets manifest in the dist directory
-var revManifest = path.dist + 'assets.json';
+const revManifest = path.dist + 'assets.json';
 
 // Error checking; produce an error rather than crashing.
-var onError = (err) => {
+const onError = (err) => {
   console.log(err.toString());
   this.emit('end');
 };
@@ -85,7 +85,7 @@ var onError = (err) => {
 //   .pipe(cssTasks('main.css')
 //   .pipe(gulp.dest(path.dist + 'styles'))
 // ```
-var cssTasks = (filename) => {
+const cssTasks = (filename) => {
   return lazypipe()
     .pipe(() => {
       return gulpif(!enabled.failStyleTask, plumber());
@@ -132,7 +132,7 @@ var cssTasks = (filename) => {
 //   .pipe(jsTasks('main.js')
 //   .pipe(gulp.dest(path.dist + 'scripts'))
 // ```
-var jsTasks = (filename) => {
+const jsTasks = (filename) => {
   return lazypipe()
     .pipe(() => {
       return gulpif(enabled.maps, sourcemaps.init());
@@ -156,7 +156,7 @@ var jsTasks = (filename) => {
 // ### Write to rev manifest
 // If there are any revved files then write them to the rev manifest.
 // See https://github.com/sindresorhus/gulp-rev
-var writeToManifest = (directory) => {
+const writeToManifest = (directory) => {
   return lazypipe()
     .pipe(gulp.dest, path.dist + directory)
     .pipe(browserSync.stream, {match: '**/*.{js,css}'})
@@ -175,19 +175,23 @@ var writeToManifest = (directory) => {
 // By default this task will only log a warning if a precompiler error is
 // raised. If the `--production` flag is set: this task will fail outright.
 gulp.task('styles', ['wiredep'], () => {
-  var merged = merge();
+  const merged = merge();
+
   manifest.forEachDependency('css', (dep) => {
-    var cssTasksInstance = cssTasks(dep.name);
+    const cssTasksInstance = cssTasks(dep.name);
+
     if (!enabled.failStyleTask) {
       cssTasksInstance.on('error', (err) => {
         console.error(err.message);
         this.emit('end');
       });
     }
+
     merged.add(gulp.src(dep.globs, {base: 'styles'})
       .pipe(plumber({errorHandler: onError}))
       .pipe(cssTasksInstance));
   });
+
   return merged
     .pipe(writeToManifest('styles'));
 });
@@ -196,7 +200,8 @@ gulp.task('styles', ['wiredep'], () => {
 // `gulp scripts` - Runs JSHint then compiles, combines, and optimizes Bower JS
 // and project JS.
 gulp.task('scripts', ['jshint'], () => {
-  var merged = merge();
+  const merged = merge();
+
   manifest.forEachDependency('js', (dep) => {
     merged.add(
       gulp.src(dep.globs, {base: 'scripts'})
@@ -204,6 +209,7 @@ gulp.task('scripts', ['jshint'], () => {
         .pipe(jsTasks(dep.name))
     );
   });
+
   return merged
     .pipe(writeToManifest('scripts'));
 });
