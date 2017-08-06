@@ -1,8 +1,8 @@
 {
-  "name": "sage",
-  "homepage": "https://roots.io/sage/",
+  "name": "alex-devero-blog-theme",
+  "homepage": "https://blog.alexdevero.com/",
   "authors": [
-    "Ben Word <ben@benword.com>"
+    "Alex Devero <deveroalex@gmail.com>"
   ],
   "license": "MIT",
   "private": true,
