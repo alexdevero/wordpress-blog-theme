@@ -90,9 +90,9 @@ const cssTasks = (filename) => {
     .pipe(() => {
       return gulpif(!enabled.failStyleTask, plumber());
     })
-    .pipe(() => {
-      return gulpif(enabled.maps, sourcemaps.init());
-    })
+    // .pipe(() => {
+    //   return gulpif(enabled.maps, sourcemaps.init());
+    // })
     .pipe(() => {
       return gulpif('*.less', less());
     })
