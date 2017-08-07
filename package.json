@@ -36,7 +36,7 @@
   "scripts": {
     "build": "bower install && gulp",
     "jshint": "gulp jshint",
-    "jscs": "jscs gulpfile.js assets/scripts/*.js"
+    "jscs": "jscs gulpfile.babel.js assets/scripts/*.js"
   },
   "devDependencies": {
     "asset-builder": "^1.1.0",
