@@ -1,0 +1,25 @@
+machine:
+  node:
+    version: 8.2.1
+  php:
+    version: 7.0.4
+  pre:
+    - mkdir ~/.yarn-cache
+
+dependencies:
+  cache_directories:
+    - '~/.yarn-cache'
+    - '~/.composer/cache'
+    - 'bower_components'
+    - 'vendor'
+  override:
+    - npm install -g bower gulp jscs
+    - yarn install
+    - bower install
+    - composer self-update && composer --version
+    - export PATH="$HOME/.composer/vendor/bin:$PATH"
+    - composer global require squizlabs/php_codesniffer
+
+test:
+  override:
+    - yarn test
